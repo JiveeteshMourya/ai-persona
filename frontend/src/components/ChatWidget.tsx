@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import type { FormEvent } from "react";
+import type { SyntheticEvent } from "react";
 import { FiCpu, FiSend, FiUser } from "react-icons/fi";
+import { Backend_Url } from "../utils/constants";
 
 export type Persona = {
   id: "hitesh-sir" | "piyush-sir" | "jiveetesh";
@@ -22,6 +23,20 @@ type ChatMessage = {
 
 type ChatWidgetProps = {
   persona: Persona;
+};
+
+type ChatApiResponse = {
+  statusCode: number;
+  data: {
+    chatType: Persona["id"];
+    response:
+      | string
+      | {
+          text?: string;
+        };
+  };
+  message: string;
+  success: boolean;
 };
 
 const personaThemes: Record<Persona["id"], PersonaTheme> = {
@@ -52,9 +67,20 @@ const personaOpeners: Record<Persona["id"], string> = {
     "Hi, I'am Jiveetesh Mourya, The builder of this project. Prompt with 'Hey Jiveetesh' to know more about me",
 };
 
+function getAssistantReply(result: ChatApiResponse) {
+  const response = result.data.response;
+
+  if (typeof response === "string") {
+    return response;
+  }
+
+  return response.text || result.message || "I got your message.";
+}
+
 export default function ChatWidget({ persona }: ChatWidgetProps) {
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isSending, setIsSending] = useState(false);
   const theme = personaThemes[persona.id];
 
   const visibleMessages = useMemo(
@@ -69,24 +95,66 @@ export default function ChatWidget({ persona }: ChatWidgetProps) {
     [messages, persona.id]
   );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedDraft = draft.trim();
 
-    if (!trimmedDraft) {
+    if (!trimmedDraft || trimmedDraft.length > 200 || isSending) {
       return;
     }
+
+    const userMessageId = Date.now();
 
     setMessages(currentMessages => [
       ...currentMessages,
       {
-        id: Date.now(),
+        id: userMessageId,
         role: "user",
         text: trimmedDraft,
       },
     ]);
     setDraft("");
+    setIsSending(true);
+
+    try {
+      const response = await fetch(`${Backend_Url}/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatType: persona.id,
+          chatMsg: trimmedDraft,
+        }),
+      });
+
+      const result = (await response.json()) as ChatApiResponse;
+
+      if (!response.ok) {
+        throw new Error(result.message || "Unable to get a response right now.");
+      }
+
+      setMessages(currentMessages => [
+        ...currentMessages,
+        {
+          id: userMessageId + 1,
+          role: "assistant",
+          text: getAssistantReply(result),
+        },
+      ]);
+    } catch (error) {
+      setMessages(currentMessages => [
+        ...currentMessages,
+        {
+          id: userMessageId + 1,
+          role: "assistant",
+          text: error instanceof Error ? error.message : "Something went wrong.",
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
   }
 
   return (
@@ -153,13 +221,15 @@ export default function ChatWidget({ persona }: ChatWidgetProps) {
         <input
           value={draft}
           onChange={event => setDraft(event.target.value)}
+          maxLength={200}
           className="min-h-12 flex-1 rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
           placeholder={`Message ${persona.name}`}
           aria-label={`Message ${persona.name}`}
         />
         <button
           type="submit"
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-linear-to-br ${theme.accent} text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 ${theme.ring}`}
+          disabled={isSending}
+          className={`grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-linear-to-br ${theme.accent} text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${theme.ring}`}
           aria-label="Send message"
         >
           <FiSend className="h-5 w-5" />

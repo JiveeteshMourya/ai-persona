@@ -11,7 +11,7 @@ export const errorHandler = (err, req, res, next) => {
     errors = err.errors;
   } else {
     // Log unexpected errors
-    logger.error(`Unhandled Error - ${err.stack || err}`);
+    console.error(`Unhandled Error - ${err.stack || err}`);
   }
 
   return res.status(statusCode).json({

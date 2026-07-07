@@ -28,13 +28,13 @@ app.use(
   })
 );
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.post("/api/v1/chat", wrapAsync(chatController));
 app.get("/api/v1/health", (req, res) => res.send("ok"));
 
 app.use(errorHandler);
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.listen(port, () => {
   console.log(`\n Server is running on port => ${port}`);

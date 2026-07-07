@@ -1,5 +1,8 @@
 import { OpenAI } from "openai";
 import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -83,7 +86,7 @@ export const chatService = async (prompt, userType) => {
 
   while (true) {
     const result = await client.chat.completions.create({
-      model: "gpt-5.4",
+      model: "gpt-4o-mini",
       messages: MESSAGES_DB,
     });
 

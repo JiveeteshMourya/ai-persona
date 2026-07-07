@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { chatSchema } from "../common/utils/validationSchemas";
-import { chatService } from "../services/chatServices";
-import ServerError from "../common/errors/ServerError";
+import { chatSchema } from "../common/utils/validationSchemas.js";
+import { chatService } from "../services/chatServices.js";
+import ServerError from "../common/errors/ServerError.js";
+import ServerResponse from "../common/utils/ServerResponse.js";
 
 export const chatController = async (req, res) => {
   const parsed = chatSchema.safeParse(req.body);
