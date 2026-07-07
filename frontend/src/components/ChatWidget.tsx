@@ -223,7 +223,13 @@ export default function ChatWidget({ persona }: ChatWidgetProps) {
             </div>
 
             <div className="max-w-[82%] rounded-lg border border-white/80 bg-white/85 px-4 py-3 text-sm leading-6 text-slate-700 shadow-sm">
-              typing...
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-flex h-2.5 w-2.5 rounded-full bg-slate-500 animate-pulse"
+                  aria-hidden="true"
+                />
+                <span>typing...</span>
+              </div>
             </div>
           </div>
         )}
