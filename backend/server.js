@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 
 import { errorHandler } from "./src/middlewares/errorMiddlewares.js";
+import wrapAsync from "./src/common/utils/wrapAsync.js";
+import { chatController } from "./src/controllers/chatControllers.js";
 
 dotenv.config({ path: "./.env" });
 const app = express();
@@ -26,6 +28,7 @@ app.use(
   })
 );
 
+app.post("/api/v1/chat", wrapAsync(chatController));
 app.get("/api/v1/health", (req, res) => res.send("ok"));
 
 app.use(errorHandler);
