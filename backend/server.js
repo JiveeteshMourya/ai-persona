@@ -5,6 +5,7 @@ import cors from "cors";
 import { errorHandler } from "./src/middlewares/errorMiddlewares.js";
 import wrapAsync from "./src/common/utils/wrapAsync.js";
 import { chatController } from "./src/controllers/chatControllers.js";
+import apiRateLimiter from "./src/middlewares/apiRateLimiter.js";
 
 dotenv.config({ path: "./.env" });
 const app = express();
@@ -30,6 +31,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(apiRateLimiter);
 
 app.post("/api/v1/chat", wrapAsync(chatController));
 app.get("/api/v1/health", (req, res) => res.send("ok"));
