@@ -64,7 +64,7 @@ const personaOpeners: Record<Persona["id"], string> = {
   "hitesh-sir": "Haanji, kya build karna hai aaj?",
   "piyush-sir": "Tell me the problem. We will break it down cleanly. Btw Coding is Dead !",
   jiveetesh:
-    "Hi, I'am Jiveetesh Mourya, The builder of this project. Prompt with 'Hey Jiveetesh' to know more about me",
+    "Hi, I'am Jiveetesh Mourya, The builder of this project. Prompt with 'Tell me about yourself' to know more about me",
 };
 
 function getAssistantReply(result: ChatApiResponse) {
@@ -212,6 +212,21 @@ export default function ChatWidget({ persona }: ChatWidgetProps) {
             </div>
           );
         })}
+
+        {isSending && (
+          <div className="flex items-end gap-2">
+            <div
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-linear-to-br ${theme.accent} text-white`}
+              aria-hidden="true"
+            >
+              <FiCpu className="h-4 w-4" />
+            </div>
+
+            <div className="max-w-[82%] rounded-lg border border-white/80 bg-white/85 px-4 py-3 text-sm leading-6 text-slate-700 shadow-sm">
+              typing...
+            </div>
+          </div>
+        )}
       </div>
 
       <form
